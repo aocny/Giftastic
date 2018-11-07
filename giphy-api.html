@@ -3,14 +3,48 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Giphy API</title>
+  <title>Cats of All Sorts</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css" />
 </head>
 
+
+
 <body>
+   <div class="container">
+     <h1>Cats of All Types</h1>
+      
+      <!-- This form will be where users input data about the movies -->
+      <form id="cat-form">
+          <label for="cat-input">Search for a cat</label>
+          <input type="text" id="cat-input"><br>
+      
+          <!-- This button will trigger our AJAX call -->
+          <input id="find-cat" type="submit" value="Cat Search">
+      </form>
+      
+      <!-- We'll be dumping our JSON contents in here -->
+      <div id="cat-view"></div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script type="text/javascript">
     // Example queryURL for Giphy API
-    var queryURL = "https://api.giphy.com/v1/gifs/search?q=cats&limit=10&api_key=TGcDNmi1T093mnpV3QGFzd0NHPtp8luq";
+    // var queryURL = "https://api.giphy.com/v1/gifs/search?q=cats&limit=10&api_key=TGcDNmi1T093mnpV3QGFzd0NHPtp8luq";
+
+    // This .on("click") function will trigger the AJAX Call
+      $("#find-cat").on("click", function(event) {
+
+        // event.preventDefault() can be used to prevent an event's default behavior.
+        // Here, it prevents the submit button from trying to submit a form when clicked
+        event.preventDefault();
+
+        // Here we grab the text from the input box
+        var catImage = $("#cat-input").val();
+
+        // Here we construct our URL
+        var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + catImage + "cats&limit=10&api_key=TGcDNmi1T093mnpV3QGFzd0NHPtp8luq";
+
+        // Write code between the dashes below to hit the queryURL with $ajax, then take the response data
+        // and display it in the div with an id of cat-view
 
 
   $.ajax({
@@ -18,9 +52,14 @@
       method: "GET"
     }).then(function(response) {
       console.log(response);
+      $("#cat-view").text(JSON.stringify(response));
+      // $(".rating").text("Rating:" + response.images.rating);
     });
-  </script>
 
+   });    
+
+  </script>
+  </div>
 </body>
 
 </html>
