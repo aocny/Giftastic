@@ -5,58 +5,179 @@
   <meta charset="utf-8">
   <title>Cats of All Sorts</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css" />
+  <style type="text/css">
+    button,
+    div,
+    form,
+    input {
+      margin: 10px;
+    } 
+  </style>
 </head>
-
-
 
 <body>
    <div class="container">
      <h1>Cats of All Types</h1>
       
+    <!-- Rendered buttons will get dumped here -->
+    <div id="buttons-view"></div>  
+     
       <!-- This form will be where users input data about the movies -->
-      <form id="cat-form">
-          <label for="cat-input">Search for a cat</label>
-          <input type="text" id="cat-input"><br>
       
-          <!-- This button will trigger our AJAX call -->
-          <input id="find-cat" type="submit" value="Cat Search">
+       <form id="search-form">
+          <label for="search-input">Search for a cat</label>
+          <input type="text" id="search-input"><br>
+      
+          <!-- This button will trigger our AJAX call & add new cat -->
+          <input id="add-cat" type="submit" value="Submit">
       </form>
-      
-      <!-- We'll be dumping our JSON contents in here -->
-      <div id="cat-view"></div>
 
+      <!--and display it in the div with an id of search-view--> 
+      <div id="search-view"></div>
+
+    
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   <script type="text/javascript">
-    // Example queryURL for Giphy API
-    // var queryURL = "https://api.giphy.com/v1/gifs/search?q=cats&limit=10&api_key=TGcDNmi1T093mnpV3QGFzd0NHPtp8luq";
-
-    // This .on("click") function will trigger the AJAX Call
-      $("#find-cat").on("click", function(event) {
-
-        // event.preventDefault() can be used to prevent an event's default behavior.
-        // Here, it prevents the submit button from trying to submit a form when clicked
-        event.preventDefault();
-
-        // Here we grab the text from the input box
-        var catImage = $("#cat-input").val();
-
-        // Here we construct our URL
-        var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + catImage + "cats&limit=10&api_key=TGcDNmi1T093mnpV3QGFzd0NHPtp8luq";
-
-        // Write code between the dashes below to hit the queryURL with $ajax, then take the response data
-        // and display it in the div with an id of cat-view
 
 
-  $.ajax({
+
+  // Initial array of cats
+  var cats = ["tigers", "lions", "cats from hell", "cougars"]; 
+
+  // Generic function for capturing the cat name from the data-attribute
+  // displayCatInfo function re-renders the HTML to display the appropriate content
+    function displayCatInfo() {
+
+        var catName = $(this).attr("data-name");
+  // Here we construct our URL
+         var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + catName + "&limit=10&api_key=TGcDNmi1T093mnpV3QGFzd0NHPtp8luq";
+
+// Write code between the dashes below to hit the queryURL with $ajax, then take the response data
+ // Creating an AJAX call for the specific movie button being clicked
+
+      $.ajax({
       url: queryURL,
       method: "GET"
     }).then(function(response) {
+
       console.log(response);
-      $("#cat-view").text(JSON.stringify(response));
-      // $(".rating").text("Rating:" + response.images.rating);
+      
+      for(var i=0; i<response.data.length; i++){
+        // console.log ("test")
+        // Creating a div to hold the cat
+    var catDiv = $("<div class='cat'>");
+    
+    // console.log (response.data[i])
+     console.log (response.data[i].images.fixed_height.url)
+
+
+    // Storing the rating data
+    var rating = response.data[i].rating;
+    // console.log(response.data)
+
+   // Creating an element to have the rating displayed
+    var pOne = $("<p>").text("Rating: " + rating);
+
+    // Displaying the rating
+    catDiv.append(pOne);
+
+    // Retrieving the URL for the image
+    var imgUrl = response.data[i].images.fixed_height.url;
+    var still = response.data[i].images.fixed_height_still.url; 
+
+    // Creating an element to hold the image
+    var catPic = $("<img>").attr("src", still);
+    catPic.attr("data-still", still)
+    catPic.attr("data-animate", imgUrl)
+    catPic.attr("state", "still")
+    // Setting the catImage src attribute to imageUrl
+    catPic.attr("alt", "cat image");
+    catPic.addClass("cat-image");
+    // Appending the image
+    catDiv.append(catPic);
+
+    // Putting the entire cat image above the previous cats
+    $("#search-view").prepend(catDiv);
+    }
     });
 
-   });    
+   
+    }
+
+// Function for displaying cat data
+function renderButtons() {
+
+  // Deleting the cat buttons prior to adding new cat buttons
+  // (this is necessary otherwise we will have repeat buttons)
+  $("#buttons-view").empty();
+
+  // Looping through the array of cats
+  for (var i = 0; i < cats.length; i++) {
+
+    // Then dynamicaly generating buttons for each cat in the array.
+    // This code $("<button>") is all jQuery needs to create the start and end tag. (<button></button>)
+    var a = $("<button>");
+    // Adding a class
+    a.addClass("cat-btn");
+    // Adding a data-attribute with a value of the cat at index i
+    a.attr("data-name", cats[i]);
+    // Providing the button's text with a value of the cat at index i
+    a.text(cats[i]);
+    // Adding the button to the HTML
+    $("#buttons-view").append(a);
+  }
+}
+
+// This function handles events where one button is clicked
+$("#add-cat").on("click", function(event) {
+  // event.preventDefault() prevents the form from trying to submit itself.
+  // We're using a form so that the user can hit enter instead of clicking the button if they want
+  event.preventDefault();
+
+  // This line will grab the text from the input box
+  var cat = $("#search-input").val().trim();
+  // The cat from the textbox is then added to our array
+  cats.push(cat);
+  $("#search-input").val("");
+  // calling renderButtons which handles the processing of our movie array
+  renderButtons();
+});
+
+// Adding a click event listener to all elements with a class of "movie-btn"
+$(document).on("click", ".cat-btn", displayCatInfo);
+$(document).on("click", ".cat-image", function(){
+  var state = $(this).attr("state");
+  if (state == "still"){
+    $(this).attr ("src", $(this).attr ("data-animate"));
+    $(this).attr ("state", "animate");
+ } else {
+  $(this).attr ("src", $(this).attr ("data-still"));
+    $(this).attr ("state", "still");
+
+ }
+
+})
+
+
+// Calling the renderButtons function at least once to display the initial list of cats
+renderButtons();
+
+$(".gif").on("click", function() {
+      // The attr jQuery method allows us to get or set the value of any attribute on our HTML element
+      var state = $(this).attr("data-state");
+      // If the clicked image's state is still, update its src attribute to what its data-animate value is.
+      // Then, set the image's data-state to animate
+      // Else set src to the data-still value
+      if (state === "still") {
+        $(this).attr("src", $(this).attr("data-animate"));
+        $(this).attr("data-state", "animate");
+      } else {
+        $(this).attr("src", $(this).attr("data-still"));
+        $(this).attr("data-state", "still");
+      }
+    });
+
+    
 
   </script>
   </div>
